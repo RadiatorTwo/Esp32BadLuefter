@@ -62,11 +62,13 @@ a{
   <h4><span id="remaining_time"></span></h4>
   <h4>Temperatur: <span id="temperature">0%</span></h4>
   <h4>Luftfeuchtigkeit: <span id="humidity">0%</span></h4>
+  <h4>Schwellwert: <span id="maxhumidity">0%</span></h4>
   <h4>Barometrischer Druck: <span id="pressure">0</span></h4>
   <h4>H&ouml;henmeter: <span id="height">0</span></h4>
   <button type="button" id="activate">L&uuml;fter starten</button>
   <button type="button" id="reset">L&uuml;fter Reset</button>
   <button type="button" id="long_run">60 minuten</button>
+  <br><br><a href="/settings">Einstellungen</a>
   <br><br><a href="/update">Firmware Update</a>
 </div>
 <script>
@@ -97,6 +99,8 @@ function getData() {
         document.getElementById("fan_on").innerHTML = "Nein";
         document.getElementById("remaining_time").innerHTML = "";
       }
+
+      document.getElementById("maxhumidity").innerHTML = data[6];
     }
   };
   xhttp.open("GET", "read_data", true);
