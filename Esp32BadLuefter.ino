@@ -11,9 +11,11 @@
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BME280.h>
 
+#include "EEPROM.h"
 #include "index.h"
 #include "update.h"
 #include "redirect.h"
+#include "settings.h"
 
 //===============================================================
 // Tasks
@@ -24,13 +26,15 @@ TaskHandle_t Task1;
 // Konstanten
 //===============================================================
 #define FAN_PIN 27
-#define MAX_HUMID 65
 #define COUNT_HUMID 5
+#define STD_MAX_HUMID 70
 #define FAN_MINUTES 10
 #define ACT_INTERVAL 30
 #define CHECK_DELAY 1000
 #define LONG_RUN_MINUTES 60
 #define SEALEVELPRESSURE_HPA (1013.25)
+
+#define ADR_HUMID 0
 
 const char* host = "esp32";
 const char* ssid     = "WiFi_SSID";
@@ -45,6 +49,7 @@ int timeCounter;
 int intervalCounter;
 int humidityCount;
 bool longrun;
+int maxHumidity;
 
 //===============================================================
 // Netzwerk Konfiguration
@@ -87,6 +92,7 @@ void handleGetData(AsyncWebServerRequest *request)
 {
   float temperature = bme.readTemperature();
   float humidity = bme.readHumidity();
+  float maxhumidity = EEPROM.read(ADR_HUMID);
   float pressure = bme.readPressure() / 100.0F;
   float height = bme.readAltitude(SEALEVELPRESSURE_HPA);
 
@@ -117,8 +123,13 @@ void handleGetData(AsyncWebServerRequest *request)
   secondsToHMS(timeLeft, hours, minutes, seconds);
   
   String timeValue = String(minutes) + " Minuten " + String(seconds) + " Sekunden verbleibend";
-  String adcValue = String(temperature) + " °C," + String(humidity) + " %," + String(pressure) + " hPa," + String(height) + " m," + fanValue + "," + timeValue;
+  String adcValue = String(temperature) + " °C," + String(humidity) + " %," + String(pressure) + " hPa," + String(height) + " m," + fanValue + "," + timeValue + "," + String(maxhumidity) + " %";
   request->send(200, "text/plain", adcValue);
+}
+
+void handleSettings(AsyncWebServerRequest *request)
+{
+  request->send(200, "text/html", SETTINGS_page);
 }
 
 void handleUpdate(AsyncWebServerRequest *request)
@@ -242,7 +253,7 @@ void checkHumidity()
   {
     currentHumidity = bme.readHumidity();
 
-    if (currentHumidity >= MAX_HUMID)
+    if (currentHumidity >= maxHumidity)
     {
       //Der Lüfter soll an gehen, wenn die letzten X Messungen über dem Grenzwert sind.
       if (humidityCount >= COUNT_HUMID)
@@ -297,6 +308,23 @@ void setup()
 
   Serial.println("Starting Device");
 
+  Serial.println("Init EEPROM");
+  if (!EEPROM.begin(64)) // size in Byte
+  {
+    Serial.println("failed to initialise EEPROM. Stopped");
+    delay(1000000);
+  }
+
+  Serial.println("Reading Settings from EEPROM");
+  maxHumidity = EEPROM.read(ADR_HUMID);
+  
+  if (maxHumidity <= 0)
+  {
+    maxHumidity = STD_MAX_HUMID;
+  }
+  
+  Serial.println("Set Max Humidity to: " + String(maxHumidity));
+
   pinMode(FAN_PIN, OUTPUT);
   digitalWrite(FAN_PIN, LOW);
 
@@ -349,6 +377,7 @@ void setup()
       delay(1000);
     }
   }
+  
   Serial.println("mDNS responder started");
 
   server.on("/", handleRoot);
@@ -356,6 +385,7 @@ void setup()
   server.on("/read_data", handleGetData);
 
   server.on("/update", handleUpdate);
+  server.on("/settings", handleSettings);
 
   server.on("/activate_fan", handleActivateFan);
   server.on("/reset_fan", handleResetFan);
@@ -365,6 +395,21 @@ void setup()
   server.on("/upload", HTTP_POST, [](AsyncWebServerRequest * request) {
     request->send(200);
   }, handleUpload);
+
+  server.on("/set", HTTP_POST, [](AsyncWebServerRequest * request) 
+  {
+    Serial.println("SetFunctionCalled");
+    if(request->hasArg("humidity"))
+    {
+      Serial.println("Param found: humidity");
+      maxHumidity = request->arg("humidity").toInt();
+      EEPROM.write(ADR_HUMID, maxHumidity);
+      EEPROM.commit();
+      Serial.println("Set Humidity Value: " + String(maxHumidity));
+    }
+
+    request->redirect("/settings");
+  });
 
   //create a task that will be executed in the Task1code() function, with priority 1 and executed on core 0
   xTaskCreatePinnedToCore(
