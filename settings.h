@@ -3,7 +3,7 @@ const char SETTINGS_page[] PROGMEM = R"=====(
 <html>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <head>
-  <script src='https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js'></script>
+  <script src='https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js'></script>
 </head>
 <style>
 .card{
@@ -39,9 +39,9 @@ a{
   <a href="/">Home</a>
   <h1>Einstellungen</h1><br>
   <form method='POST' action='/set' enctype='multipart/form-data' id='settings_form'>
-  Luftfeuchtigkeit
+  Taupunkt Differenz Schwellwert
   <br>
-  <input type='number' name='humidity'>
+  <input type='number' name='dewpoint'>
   <br>
   <br>
   <input type='submit' value='Update'>

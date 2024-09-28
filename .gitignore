@@ -1,0 +1,41 @@
+# Ignore build and temporary files
+*.elf
+*.bin
+*.hex
+*.dfu
+*.eep
+*.map
+*.sym
+*.lss
+
+# Ignore compiled object files
+*.o
+*.d
+
+# Ignore Arduino IDE files
+*.ino.*
+*.cpp.*
+*.h.*
+
+# Ignore core and library files
+/libraries/
+/hardware/
+
+# Ignore build folders
+/build/
+/obj/
+
+# Ignore temporary files
+*.tmp
+*.log
+*.bak
+*.swp
+*.swo
+
+# Ignore directories created by the Arduino IDE
+/.vscode/
+/.arduino15/
+/.idea/
+
+# Ignore macOS system files
+.DS_Store

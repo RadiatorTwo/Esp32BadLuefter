@@ -3,7 +3,7 @@ const char MAIN_page[] PROGMEM = R"=====(
 <html>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <head>
-  <script src='https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js'></script>
+  <script src='https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js'></script>
 </head>
 <style>
 .card{
@@ -60,9 +60,11 @@ a{
   <h1>ESP32 Main Page</h1>
   <h4>L&uuml;fter an: <span id="fan_on"></span></h4>
   <h4><span id="remaining_time"></span></h4>
-  <h4>Temperatur: <span id="temperature">0%</span></h4>
-  <h4>Luftfeuchtigkeit: <span id="humidity">0%</span></h4>
-  <h4>Schwellwert: <span id="maxhumidity">0%</span></h4>
+  <h4>Temperatur: <span id="temperature">0 °C</span></h4>
+  <h4>Luftfeuchtigkeit: <span id="humidity">0 %</span></h4>
+  <h4>Taupunkt: <span id="dewpoint">0 °C</span></h4>
+  <h4>Aktuelle Taupunkt Differenz: <span id="dewpointdiff">0 °C</span></h4>
+  <h4>Schwellwert Taupunkt Differenz: <span id="maxdewpoint">0 °C</span></h4>
   <h4>Barometrischer Druck: <span id="pressure">0</span></h4>
   <h4>H&ouml;henmeter: <span id="height">0</span></h4>
   <button type="button" id="activate">L&uuml;fter starten</button>
@@ -70,6 +72,7 @@ a{
   <button type="button" id="long_run">60 minuten</button>
   <br><br><a href="/settings">Einstellungen</a>
   <br><br><a href="/update">Firmware Update</a>
+  <br><br><div>Version: 0.8</div>
 </div>
 <script>
 
@@ -85,14 +88,15 @@ function getData() {
       var data = this.responseText.split(",");
       document.getElementById("temperature").innerHTML = data[0];
       document.getElementById("humidity").innerHTML = data[1];
-      document.getElementById("pressure").innerHTML = data[2];
-      document.getElementById("height").innerHTML = data[3];
+      document.getElementById("dewpoint").innerHTML = data[2];
+      document.getElementById("pressure").innerHTML = data[3];
+      document.getElementById("height").innerHTML = data[4];
 
-      var fanValue = data[4];
+      var fanValue = data[5];
       if(fanValue === "true")
       {
         document.getElementById("fan_on").innerHTML = "Ja";
-        document.getElementById("remaining_time").innerHTML = data[5];
+        document.getElementById("remaining_time").innerHTML = data[6];
       }
       else
       {
@@ -100,7 +104,8 @@ function getData() {
         document.getElementById("remaining_time").innerHTML = "";
       }
 
-      document.getElementById("maxhumidity").innerHTML = data[6];
+      document.getElementById("maxdewpoint").innerHTML = data[7];
+      document.getElementById("dewpointdiff").innerHTML = data[8];
     }
   };
   xhttp.open("GET", "read_data", true);
