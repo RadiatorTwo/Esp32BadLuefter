@@ -72,13 +72,13 @@ a{
   <button type="button" id="long_run">60 minuten</button>
   <br><br><a href="/settings">Einstellungen</a>
   <br><br><a href="/update">Firmware Update</a>
-  <br><br><div>Version: 0.8</div>
+  <br><br><div>Version: 0.83</div>
 </div>
 <script>
 
 setInterval(function() {
   getData();
-}, 1000);
+}, 250);
 
 function getData() {
   var xhttp = new XMLHttpRequest();
@@ -112,30 +112,53 @@ function getData() {
   xhttp.send();
 }
 
-$(function()
-{
-  $('#activate').click(function()
-  {
+$(function() {
+  $('#activate').click(function() {
     $.ajax({
       url: '/activate_fan',
-      type: 'POST'
-      });
+      type: 'POST',
+      data: {}, // Leeres Datenobjekt hinzugefügt
+      success: function(response) {
+        console.log('Lüfter wurde aktiviert.');
+      },
+      error: function(xhr, status, error) {
+        console.error('Fehler beim Aktivieren des Lüfters:', error);
+        console.error('Status:', status);
+        console.error('Antwort:', xhr.responseText);
+      }
+    });
   });
 
-  $('#reset').click(function()
-  {
+  $('#reset').click(function() {
     $.ajax({
       url: '/reset_fan',
-      type: 'POST'
-      });
+      type: 'POST',
+      data: {},
+      success: function(response) {
+        console.log('Lüfter wurde zurückgesetzt.');
+      },
+      error: function(xhr, status, error) {
+        console.error('Fehler beim Zurücksetzen des Lüfters:', error);
+        console.error('Status:', status);
+        console.error('Antwort:', xhr.responseText);
+      }
+    });
   });
 
-  $('#long_run').click(function()
-  {
+  $('#long_run').click(function() {
     $.ajax({
       url: '/longrun_fan',
-      type: 'POST'
-      });
+      type: 'POST',
+      data: {},
+      success: function(response) {
+        console.log('Lüfter läuft für 60 Minuten.');
+      },
+      error: function(xhr, status, error) {
+        console.error('Fehler beim Starten des Langlaufs:', error);
+        console.error('Status:', status);
+        console.error('Antwort:', xhr.responseText);
+      }
+    });
   });
 });
 </script>
